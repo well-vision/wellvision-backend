@@ -3,49 +3,45 @@ import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import cors from 'cors';
 
-// Correct import paths (make sure these paths are accurate)
+// Import your routes
 import customerRoutes from './routes/customerRoutes.js';
-import invoiceRoutes from './routes/invoiceRoutes.js'; // ✅ Corrected path
+import invoiceRoutes from './routes/invoiceRoutes.js';
+import authRoutes from './routes/authRoutes.js';       // 👈 from your auth system
+import userRoutes from './routes/userRoutes.js';       // 👈 from your auth system
 
 dotenv.config();
 
 const app = express();
+const PORT = process.env.PORT || 4000;
+
+// Middleware
 app.use(cors({
   origin: 'http://localhost:3000',
   credentials: true
 }));
 app.use(express.json());
 
-// Connect to MongoDB
-mongoose.connect(process.env.MONGODB_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
-})
-.then(() => console.log('✅ MongoDB connected'))
-.catch(err => console.error('❌ MongoDB connection error:', err));
-
-// Mount routes (these should be before the listen call)
+// Routes
 app.use('/api/customers', customerRoutes);
-app.use('/api/invoices', invoiceRoutes); // ✅ Moved this above listen
+app.use('/api/invoices', invoiceRoutes);
+app.use('/api/auth', authRoutes);       // 👈 mount auth routes
+app.use('/api/user', userRoutes);       // 👈 mount user routes
 
-// ✅ Error Handling Middleware – Add this AFTER routes
+// Error Handler Middleware (should be last middleware)
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({ success: false, message: 'Server Error' });
 });
 
-// Connect to MongoDB and start server
+// Connect to MongoDB and start the server
 mongoose.connect(process.env.MONGODB_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true
 }).then(() => {
-  console.log('MongoDB Connected');
+  console.log('✅ MongoDB Connected');
   app.listen(PORT, () => {
-    console.log(`Server is running on PORT ${PORT}`);
+    console.log(`🚀 Server running on port ${PORT}`);
   });
 }).catch((err) => {
-  console.error('Failed to connect to MongoDB', err);
+  console.error('❌ Failed to connect to MongoDB:', err);
 });
-
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
