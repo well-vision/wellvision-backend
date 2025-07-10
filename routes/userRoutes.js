@@ -24,8 +24,8 @@ router.get('/profile', userAuth, async (req, res) => {
 
     res.json({ success: true, user });
   } catch (error) {
-    console.error('Error fetching profile:', error);
-    res.status(500).json({ success: false, message: error.message });
+    console.error('GET /profile error:', error.message); // Optional for debugging
+    res.status(500).json({ success: false, message: 'Server error' });
   }
 });
 
