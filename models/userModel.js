@@ -19,6 +19,12 @@ const userSchema = new mongoose.Schema({
   password: { type: String, required: true }, 
   // 🔒 Hashed password of the user
 
+  avatar: { type: String },
+
+  role: { type: String, default: 'User' },
+
+  lastLogin: { type: Date }, 
+
   verifyOtp: { type: String, default: '' }, 
   // 📩 OTP sent for verifying the account during registration
 
@@ -40,6 +46,6 @@ const userSchema = new mongoose.Schema({
 
 // Create and export the model
 // If a model named 'user' already exists, use it. Otherwise, create a new one.
-const userModel = mongoose.models.user || mongoose.model('user', userSchema);
+const userModel = mongoose.models.User || mongoose.model('User', userSchema);
 
 export default userModel;
