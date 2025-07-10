@@ -8,13 +8,18 @@ const router = express.Router();
 // Protected Route: Get User Profile
 router.get('/profile', userAuth, async (req, res) => {
   try {
-    // Fetch user by ID saved in req.user by userAuth middleware
-    const user = await userModel.findById(req.user.id).select('-password -resetOtp -verifyOtp');
-    if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+    const user = await userModel
+      .findById(req.user._id) // ✅ Corrected this line
+      .select('-password -resetOtp -verifyOtp');
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
 
     res.json({ success: true, user });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    console.error('GET /profile error:', error.message); // optional: log for debugging
+    res.status(500).json({ success: false, message: 'Server error' });
   }
 });
 
