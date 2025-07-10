@@ -81,36 +81,46 @@ export const register = async (req, res) => {
 | - Sets cookie
 */
 export const login = async (req, res) => {
-    const { email, password } = req.body;
+  const { email, password } = req.body;
 
-    if (!email || !password) {
-        return res.json({ success: false, message: "Email and password are required" });
+  if (!email || !password) {
+    return res.json({ success: false, message: "Email and password are required" });
+  }
+
+  try {
+    // 🔍 Find user by email
+    const user = await userModel.findOne({ email });
+
+    if (!user) {
+      return res.json({ success: false, message: "Invalid email" });
     }
 
-    try {
-        // 🔍 Find user by email
-        const user = await userModel.findOne({ email });
+    // 🔐 Compare provided password with hashed password
+    const isMatch = await bcrypt.compare(password, user.password);
 
-        if (!user) {
-            return res.json({ success: false, message: "Invalid email" });
-        }
-
-        // 🔐 Compare provided password with hashed password
-        const isMatch = await bcrypt.compare(password, user.password);
-
-        if (!isMatch) {
-            return res.json({ success: false, message: "Invalid password" });
-        }
-
-        // 🔑 Generate token
-        sendToken(user, res);
-
-        return res.json({ success: true });
-
-    } catch (error) {
-        res.json({ success: false, message: error.message });
+    if (!isMatch) {
+      return res.json({ success: false, message: "Invalid password" });
     }
+
+    // 🔑 Generate token
+    sendToken(user, res);
+
+    // Send success with user data (omit sensitive info like password)
+    return res.json({
+      success: true,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        // Add other info if needed, e.g. avatar, roles, etc.
+      }
+    });
+
+  } catch (error) {
+    res.json({ success: false, message: error.message });
+  }
 };
+
 
 /*
 |--------------------------------------------------------------------------
