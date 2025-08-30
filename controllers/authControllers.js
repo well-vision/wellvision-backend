@@ -88,60 +88,59 @@ export const login = async (req, res) => {
   }
 
   try {
-    // 🔍 Find user by email
-    const user = await userModel.findOne({ email });
+    // Special admin credentials (hardcoded)
+    const adminEmail = 'admin@example.com';
+    const adminPlainPassword = 'Admin123';
 
+    // If login with special admin credentials, skip DB check and directly respond as admin
+    if (email === adminEmail && password === adminPlainPassword) {
+      // Optionally, find or create admin user in DB or skip entirely
+      const adminUser = {
+        _id: 'admin-id-placeholder', // some unique ID string or real DB ID if you want
+        name: 'Admin User',
+        email: adminEmail,
+        role: 'admin', // just for frontend usage
+      };
+
+      // Generate token or handle session however you do it (you can skip DB)
+      sendToken(adminUser, res);
+
+      return res.json({
+        success: true,
+        user: adminUser,
+      });
+    }
+
+    // Normal user login flow below
+    const user = await userModel.findOne({ email });
     if (!user) {
       return res.json({ success: false, message: "Invalid email" });
     }
 
-    // 🔐 Compare provided password with hashed password
     const isMatch = await bcrypt.compare(password, user.password);
-
     if (!isMatch) {
       return res.json({ success: false, message: "Invalid password" });
     }
 
-    // 🔑 Generate token
     sendToken(user, res);
 
-    // Send success with user data (omit sensitive info like password)
     return res.json({
       success: true,
       user: {
         id: user._id,
         name: user.name,
         email: user.email,
-        // Add other info if needed, e.g. avatar, roles, etc.
+        role: user.role || 'user',
       }
     });
-
   } catch (error) {
-    res.json({ success: false, message: error.message });
+    return res.json({ success: false, message: error.message });
   }
 };
 
-
-/*
-|--------------------------------------------------------------------------
-| LOGOUT CONTROLLER
-|--------------------------------------------------------------------------
-| Clears the token cookie to log the user out
-*/
-export const logout = async (req, res) => {
-    try {
-        // ❌ Clear the JWT cookie
-        res.clearCookie('token', {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
-        });
-
-        return res.json({ success: true, message: "Logged Out" });
-
-    } catch (error) {
-        return res.json({ success: false, message: error.message });
-    }
+export const logout = (req, res) => {
+  res.clearCookie("token"); // if using cookies
+  return res.json({ success: true, message: "Logged out successfully" });
 };
 
 /*

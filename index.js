@@ -9,6 +9,11 @@ import invoiceRoutes from './routes/invoiceRoutes.js';
 import authRoutes from './routes/authRoutes.js';       // 👈 from your auth system
 import userRoutes from './routes/userRoutes.js';       // 👈 from your auth system
 
+import adminClientRoutes from './admin/routes/client.js';
+import adminGeneralRoutes from './admin/routes/general.js';
+import adminSalesRoutes from './admin/routes/sales.js';
+import adminManagementRoutes from './admin/routes/management.js';
+
 dotenv.config();
 
 const app = express();
@@ -26,6 +31,12 @@ app.use('/api/customers', customerRoutes);
 app.use('/api/invoices', invoiceRoutes);
 app.use('/api/auth', authRoutes);       // 👈 mount auth routes
 app.use('/api/user', userRoutes);       // 👈 mount user routes
+
+app.use('/api/admin/client', adminClientRoutes);
+app.use('/api/admin/general', adminGeneralRoutes);
+app.use('/api/admin/sales', adminSalesRoutes);
+app.use('/api/admin/management', adminManagementRoutes);
+
 
 // Error Handler Middleware (should be last middleware)
 app.use((err, req, res, next) => {
