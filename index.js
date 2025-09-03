@@ -2,6 +2,7 @@ import express from 'express';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import cors from 'cors';
+import cookieParser from 'cookie-parser';
 
 // Import your routes
 import customerRoutes from './routes/customerRoutes.js';
@@ -15,11 +16,19 @@ const app = express();
 const PORT = process.env.PORT || 4000;
 
 // Middleware
+const allowedOrigins = ['http://localhost:3000', 'http://localhost:5173'];
 app.use(cors({
-  origin: 'http://localhost:3000',
-  credentials: true
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
+    return callback(new Error('Not allowed by CORS'));
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
-app.use(express.json());
+
+app.use(express.json({ limit: '50mb' })); // allow larger base64 profilePic
+app.use(cookieParser()); // read JWT cookie
 
 // Routes
 app.use('/api/customers', customerRoutes);
@@ -34,7 +43,9 @@ app.use((err, req, res, next) => {
 });
 
 // Connect to MongoDB and start the server
-mongoose.connect(process.env.MONGODB_URI, {
+const mongoUri = (process.env.MONGODB_URI || '').toString().trim().replace(/^['"]|['"]$/g, '');
+
+mongoose.connect(mongoUri, {
   useNewUrlParser: true,
   useUnifiedTopology: true
 }).then(() => {

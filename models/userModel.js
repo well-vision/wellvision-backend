@@ -19,7 +19,9 @@ const userSchema = new mongoose.Schema({
   password: { type: String, required: true }, 
   // 🔒 Hashed password of the user
 
-  avatar: { type: String },
+  avatar: { type: String }, // profile picture (URL or base64)
+
+  phone: { type: String, default: '' },
 
   role: { type: String, default: 'User' },
 

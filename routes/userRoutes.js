@@ -29,4 +29,41 @@ router.get('/profile', userAuth, async (req, res) => {
   }
 });
 
+/*
+|------------------------------------------------------------------------
+| PUT /api/user/profile
+|------------------------------------------------------------------------
+| Protected route to update current user's profile fields.
+| Allowed fields: name, phone, role, avatar
+*/
+router.put('/profile', userAuth, async (req, res) => {
+  try {
+    const allowed = ['name', 'phone', 'role', 'avatar'];
+    const updates = {};
+    for (const key of allowed) {
+      if (Object.prototype.hasOwnProperty.call(req.body, key)) {
+        updates[key] = req.body[key];
+      }
+    }
+
+    const user = await userModel.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    Object.assign(user, updates);
+    await user.save();
+
+    const safe = user.toObject();
+    delete safe.password;
+    delete safe.resetOtp;
+    delete safe.verifyOtp;
+
+    res.json({ success: true, user: safe });
+  } catch (error) {
+    console.error('PUT /profile error:', error.message);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
 export default router;
