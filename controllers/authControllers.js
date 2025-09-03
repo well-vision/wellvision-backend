@@ -102,6 +102,10 @@ export const login = async (req, res) => {
       return res.json({ success: false, message: "Invalid password" });
     }
 
+     // Update lastLogin timestamp
+    user.lastLogin = new Date();
+    await user.save();
+
     // 🔑 Generate token
     sendToken(user, res);
 
@@ -112,6 +116,9 @@ export const login = async (req, res) => {
         id: user._id,
         name: user.name,
         email: user.email,
+        avatar: user.avatar,
+        role: user.role,
+        lastLogin: user.lastLogin
         // Add other info if needed, e.g. avatar, roles, etc.
       }
     });
