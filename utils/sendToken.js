@@ -2,6 +2,7 @@
 
 import jwt from "jsonwebtoken";
 import config from "../config/config.js";
+import crypto from "node:crypto";
 
 /*
 |--------------------------------------------------------------------------
@@ -12,15 +13,23 @@ import config from "../config/config.js";
 */
 
 const sendToken = (user, res) => {
+  const jti = crypto.randomUUID?.() || Math.random().toString(36).slice(2);
   const token = jwt.sign(
-    { id: user._id },
+    { id: user._id, jti },
     config.jwtSecret,
     { expiresIn: '7d' }
   );
 
+  // Track session in DB (non-blocking best-effort)
+  try {
+    user.activeSessions = user.activeSessions || [];
+    user.activeSessions.push({ jti, userAgent: res.req.headers['user-agent'] || '', ip: res.req.ip || '' });
+    user.save().catch(() => {});
+  } catch {}
+
   res.cookie("token", token, config.cookieOptions);
 
-  return token;
+  return { token, jti };
 };
 
 export default sendToken;

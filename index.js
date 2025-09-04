@@ -3,14 +3,21 @@ import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 // Import your routes
 import customerRoutes from './routes/customerRoutes.js';
 import invoiceRoutes from './routes/invoiceRoutes.js';
 import authRoutes from './routes/authRoutes.js';       // 👈 from your auth system
 import userRoutes from './routes/userRoutes.js';       // 👈 from your auth system
+import forexRoutes from './routes/forexRoutes.js';
+import notificationRoutes from './routes/notificationRoutes.js';
 
-dotenv.config();
+// Load .env colocated with this file, regardless of process.cwd()
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+dotenv.config({ path: path.join(__dirname, '.env') });
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -35,6 +42,8 @@ app.use('/api/customers', customerRoutes);
 app.use('/api/invoices', invoiceRoutes);
 app.use('/api/auth', authRoutes);       // 👈 mount auth routes
 app.use('/api/user', userRoutes);       // 👈 mount user routes
+app.use('/api/forex', forexRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 // Error Handler Middleware (should be last middleware)
 app.use((err, req, res, next) => {
