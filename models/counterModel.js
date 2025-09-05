@@ -18,8 +18,7 @@ const counterSchema = new mongoose.Schema(
   }
 );
 
-// ✅ Optional index for performance boost on frequent lookups
-counterSchema.index({ name: 1 });
+// Index is automatically created by unique: true on name field
 
 // Export the model
 const Counter = mongoose.model('Counter', counterSchema);

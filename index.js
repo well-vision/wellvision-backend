@@ -54,10 +54,7 @@ app.use((err, req, res, next) => {
 // Connect to MongoDB and start the server
 const mongoUri = (process.env.MONGODB_URI || '').toString().trim().replace(/^['"]|['"]$/g, '');
 
-mongoose.connect(mongoUri, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
-}).then(() => {
+mongoose.connect(mongoUri).then(() => {
   console.log('✅ MongoDB Connected');
   app.listen(PORT, () => {
     console.log(`🚀 Server running on port ${PORT}`);
