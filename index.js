@@ -17,6 +17,7 @@ import adminClientRoutes from './admin/routes/client.js';
 import adminGeneralRoutes from './admin/routes/general.js';
 import adminSalesRoutes from './admin/routes/sales.js';
 import adminManagementRoutes from './admin/routes/management.js';
+import adminStaffRoutes from './admin/routes/staff.js';
 
 // Admin Data Models (for seeding, if needed)
 import User from './admin/models/User.js';
@@ -25,6 +26,7 @@ import ProductStat from './admin/models/ProductStat.js';
 import Transaction from './admin/models/Transaction.js';
 import OverallStat from './admin/models/OverallStat.js';
 import AffiliateStat from './admin/models/AffiliateStat.js';
+import Staff from './admin/models/Staff.js';
 import {
   dataUser,
   dataProduct,
@@ -62,6 +64,7 @@ app.use('/api/admin/client', adminClientRoutes);
 app.use('/api/admin/general', adminGeneralRoutes);
 app.use('/api/admin/sales', adminSalesRoutes);
 app.use('/api/admin/management', adminManagementRoutes);
+app.use('/api/admin/staff', adminStaffRoutes);
 
 // Error Handler Middleware
 app.use((err, req, res, next) => {
