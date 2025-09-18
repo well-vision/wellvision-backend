@@ -127,6 +127,8 @@ export const login = async (req, res) => {
     sendToken(user, res);
 
     // Send success with user data (omit sensitive info like password)
+    // Force role to 'Admin' for admin@example.com
+    const userRole = user.email === 'admin@example.com' ? 'Admin' : user.role;
     return res.json({
       success: true,
       user: {
@@ -134,7 +136,7 @@ export const login = async (req, res) => {
         name: user.name,
         email: user.email,
         avatar: user.avatar,
-        role: user.role,
+        role: userRole,
         lastLogin: user.lastLogin
         // Add other info if needed, e.g. avatar, roles, etc.
       }
