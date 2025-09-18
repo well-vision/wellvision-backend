@@ -98,15 +98,32 @@ export const login = async (req, res) => {
     // 🔐 Compare provided password with hashed password
     const isMatch = await bcrypt.compare(password, user.password);
 
+    // Account lock check
+    if (user.lockUntil && user.lockUntil > Date.now()) {
+      user.loginHistory.push({ status: 'locked', message: 'Account locked', ip: req.ip, userAgent: req.headers['user-agent'] || '' });
+      await user.save();
+      return res.status(423).json({ success: false, message: 'Account locked due to too many failed attempts. Try again later.' });
+    }
+
     if (!isMatch) {
+      user.failedLoginAttempts = (user.failedLoginAttempts || 0) + 1;
+      user.loginHistory.push({ status: 'fail', message: 'Invalid password', ip: req.ip, userAgent: req.headers['user-agent'] || '' });
+      if (user.failedLoginAttempts >= 5) {
+        user.lockUntil = new Date(Date.now() + 15 * 60 * 1000); // lock 15 min
+      }
+      await user.save();
       return res.json({ success: false, message: "Invalid password" });
     }
+
+    // Reset failed attempts on success
+    user.failedLoginAttempts = 0;
+    user.lockUntil = null;
 
      // Update lastLogin timestamp
     user.lastLogin = new Date();
     await user.save();
 
-    // 🔑 Generate token
+    // 🔑 Generate token and create tracked session
     sendToken(user, res);
 
     // Send success with user data (omit sensitive info like password)

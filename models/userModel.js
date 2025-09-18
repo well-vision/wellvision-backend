@@ -25,6 +25,9 @@ const userSchema = new mongoose.Schema({
 
   role: { type: String, default: 'User' },
 
+  // Persist per-user application settings (appearance, invoice, etc.)
+  settings: { type: mongoose.Schema.Types.Mixed, default: {} },
+
   lastLogin: { type: Date }, 
 
   verifyOtp: { type: String, default: '' }, 
@@ -45,6 +48,32 @@ const userSchema = new mongoose.Schema({
 { timestamps: true } 
 // 🕒 Adds `createdAt` and `updatedAt` fields automatically
 );
+
+// Security and auditing fields
+userSchema.add({
+  passwordChangedAt: { type: Date },
+  failedLoginAttempts: { type: Number, default: 0 },
+  lockUntil: { type: Date, default: null },
+  // Email-based 2FA OTP
+  twoFaOtp: { type: String, default: '' },
+  twoFaOtpExpireAt: { type: Number, default: 0 },
+  // Track active sessions (JWT jti)
+  activeSessions: [{
+    jti: { type: String },
+    userAgent: { type: String, default: '' },
+    ip: { type: String, default: '' },
+    createdAt: { type: Date, default: Date.now },
+    lastSeenAt: { type: Date, default: Date.now }
+  }],
+  // Login history audit trail
+  loginHistory: [{
+    time: { type: Date, default: Date.now },
+    ip: { type: String, default: '' },
+    userAgent: { type: String, default: '' },
+    status: { type: String, enum: ['success', 'fail', 'locked'], default: 'success' },
+    message: { type: String, default: '' }
+  }]
+});
 
 // Create and export the model
 // If a model named 'user' already exists, use it. Otherwise, create a new one.

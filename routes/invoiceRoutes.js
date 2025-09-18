@@ -2,6 +2,7 @@
 import express from 'express';
 import { createInvoice } from '../controllers/invoiceController.js';
 import Counter from '../models/counterModel.js';
+import userAuth from '../middleware/userAuth.js';
 
 const router = express.Router();
 
@@ -38,6 +39,6 @@ router.get('/next-bill-no', async (req, res) => {
 });
 
 // Route: Create a new invoice (auto-generates billNo internally)
-router.post('/create', createInvoice);
+router.post('/create', userAuth, createInvoice);
 
 export default router;
