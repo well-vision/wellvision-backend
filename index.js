@@ -14,6 +14,7 @@ import userRoutes from './routes/userRoutes.js';       // 👈 from your auth sy
 import forexRoutes from './routes/forexRoutes.js';
 import notificationRoutes from './routes/notificationRoutes.js';
 import orderRoutes from './routes/orderRoutes.js';
+import productRoutes from './routes/productRoutes.js';
 
 // Load .env colocated with this file, regardless of process.cwd()
 const __filename = fileURLToPath(import.meta.url);
@@ -32,7 +33,7 @@ app.use(cors({
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  allowedHeaders: ['Content-Type', 'Authorization', 'Cookie']
 }));
 
 app.use(express.json({ limit: '50mb' })); // allow larger base64 profilePic
@@ -46,6 +47,7 @@ app.use('/api/user', userRoutes);       // 👈 mount user routes
 app.use('/api/forex', forexRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/orders', orderRoutes);
+app.use('/api/products', productRoutes);
 
 // Error Handler Middleware (should be last middleware)
 app.use((err, req, res, next) => {
