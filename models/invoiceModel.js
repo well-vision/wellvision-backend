@@ -3,16 +3,8 @@ import mongoose from 'mongoose';
 const itemSchema = new mongoose.Schema({
   item: { type: String, required: true },
   description: { type: String },
-  rs: {
-    type: String,
-    required: true,
-    match: [/^\d+$/, 'Rs. must be a numeric string'],
-  },
-  cts: {
-    type: String,
-    required: true,
-    match: [/^\d+$/, 'Cts. must be a numeric string'],
-  },
+  rs: { type: Number, required: true },
+  cts: { type: Number, required: true },
 });
 
 const invoiceSchema = new mongoose.Schema({
@@ -27,9 +19,9 @@ const invoiceSchema = new mongoose.Schema({
   },
   address: { type: String, required: true },
   items: [itemSchema],
-  amount: { type: String, required: true },
-  advance: { type: String, required: true },
-  balance: { type: String, required: true },
+  amount: { type: Number, required: true },
+  advance: { type: Number, required: true },
+  balance: { type: Number, required: true },
 }, { timestamps: true });
 
 const Invoice = mongoose.model('Invoice', invoiceSchema);

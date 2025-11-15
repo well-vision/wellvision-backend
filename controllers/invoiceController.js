@@ -14,13 +14,25 @@ async function getNextSequence(name) {
 // Controller function to create invoice
 export const createInvoice = async (req, res) => {
   try {
-    const billNo = await getNextSequence('billNo');
+    const seq = await getNextSequence('billNo');
+    const billNo = `INV-${String(seq).padStart(4, '0')}`;
 
-    const invoice = new InvoiceModel({
+    // Coerce numeric fields and cast date
+    const invoiceData = {
       ...req.body,
       billNo,
-      date: req.body.date || new Date(),  // default to now if not provided
-    });
+      date: req.body.date ? new Date(req.body.date) : new Date(),
+      amount: Number(req.body.amount),
+      advance: Number(req.body.advance),
+      balance: Number(req.body.balance),
+      items: req.body.items.map(item => ({
+        ...item,
+        rs: Number(item.rs),
+        cts: Number(item.cts),
+      })),
+    };
+
+    const invoice = new InvoiceModel(invoiceData);
 
     await invoice.save();
 
