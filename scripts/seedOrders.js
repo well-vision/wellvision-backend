@@ -12,22 +12,22 @@ const mongoUri = (process.env.MONGODB_URI || '').toString().trim().replace(/^['"
 
 const sampleOrders = [
   {
-    orderNumber: 'WV-2001',
+    orderNumber: 'WV-2003',
     customerName: 'Sample Co',
     customerEmail: 'info@sample.co',
     items: [
-      { sku: 'SKU-1', description: 'Widget A', quantity: 2, unitPrice: 100 },
-      { sku: 'SKU-2', description: 'Widget B', quantity: 1, unitPrice: 220 },
+      { productId: '507f1f77bcf86cd799439011', sku: 'SKU-1', description: 'Widget A', quantity: 2, unitPrice: 100 },
+      { productId: '507f1f77bcf86cd799439012', sku: 'SKU-2', description: 'Widget B', quantity: 1, unitPrice: 220 },
     ],
   status: 'Order Received',
     total: 420,
   },
   {
-    orderNumber: 'WV-2002',
+    orderNumber: 'WV-2004',
     customerName: 'Example LLC',
     customerEmail: 'sales@example.com',
     items: [
-      { sku: 'SKU-3', description: 'Widget C', quantity: 3, unitPrice: 50 },
+      { productId: '507f1f77bcf86cd799439013', sku: 'SKU-3', description: 'Widget C', quantity: 3, unitPrice: 50 },
     ],
   status: 'Order place in Lab',
     total: 150,
