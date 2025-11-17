@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 
 const orderItemSchema = new mongoose.Schema({
   productId: { type: mongoose.Schema.Types.ObjectId, ref: 'Product', required: true },
-  sku: { type: String, required: true },
+  sku: { type: String, required: false },
   description: { type: String },
   quantity: { type: Number, required: true, default: 1 },
   unitPrice: { type: Number, required: true, default: 0 },
