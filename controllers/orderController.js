@@ -41,44 +41,37 @@ export const updateOrderStatus = async (req, res) => {
 };
 
 export const createOrder = async (req, res) => {
-  const session = await mongoose.startSession();
-  session.startTransaction();
-
   try {
+    console.log('Received order data:', req.body);
     const { orderNumber, customerName, customerEmail, items = [], status = 'Order Received', total = 0 } = req.body;
 
     if (!orderNumber || !customerName) {
-      await session.abortTransaction();
       return res.status(400).json({ success: false, message: 'orderNumber and customerName are required' });
     }
 
     if (items.length === 0) {
-      await session.abortTransaction();
       return res.status(400).json({ success: false, message: 'Order must contain at least one item' });
     }
 
     // Check if order number already exists
-    const exists = await Order.findOne({ orderNumber }).session(session);
+    const exists = await Order.findOne({ orderNumber });
     if (exists) {
-      await session.abortTransaction();
       return res.status(409).json({ success: false, message: 'Order number already exists' });
     }
 
-    // Validate and check stock for each item
+    // Validate items and check stock availability
     for (const item of items) {
       if (!item.productId || !item.quantity || item.quantity <= 0) {
-        await session.abortTransaction();
         return res.status(400).json({ success: false, message: 'Invalid item data: productId and positive quantity required' });
       }
 
-      const product = await Product.findById(item.productId).session(session);
+      // Check if product exists and has sufficient stock
+      const product = await Product.findById(item.productId);
       if (!product) {
-        await session.abortTransaction();
-        return res.status(400).json({ success: false, message: `Product not found: ${item.productId}` });
+        return res.status(400).json({ success: false, message: `Product with ID ${item.productId} not found` });
       }
 
       if (product.stock < item.quantity) {
-        await session.abortTransaction();
         return res.status(400).json({
           success: false,
           message: `Insufficient stock for ${product.name}. Available: ${product.stock}, Requested: ${item.quantity}`
@@ -86,33 +79,55 @@ export const createOrder = async (req, res) => {
       }
     }
 
-    // Reduce stock for each product
-    for (const item of items) {
-      await Product.findByIdAndUpdate(
-        item.productId,
-        { $inc: { stock: -item.quantity } },
-        { session }
-      );
+    console.log('Creating order with items:', items);
+
+    // Start a transaction to ensure atomicity
+    const session = await mongoose.startSession();
+    session.startTransaction();
+
+    try {
+      // Create the order
+      const order = await Order.create([{
+        orderNumber,
+        customerName,
+        customerEmail,
+        items,
+        status,
+        total
+      }], { session });
+
+      // Update product stock levels
+      for (const item of items) {
+        await Product.findByIdAndUpdate(
+          item.productId,
+          {
+            $inc: {
+              stock: -item.quantity,
+              totalSold: item.quantity
+            },
+            lastStockUpdate: new Date()
+          },
+          { session }
+        );
+      }
+
+      // Commit the transaction
+      await session.commitTransaction();
+      console.log('Order created successfully with stock updates:', order[0]);
+      res.status(201).json({ success: true, data: order[0] });
+
+    } catch (error) {
+      // Abort the transaction on error
+      await session.abortTransaction();
+      throw error;
+    } finally {
+      session.endSession();
     }
-
-    // Create the order
-    const order = await Order.create([{
-      orderNumber,
-      customerName,
-      customerEmail,
-      items,
-      status,
-      total
-    }], { session });
-
-    await session.commitTransaction();
-    res.status(201).json({ success: true, data: order[0] });
   } catch (err) {
-    await session.abortTransaction();
-    console.error('createOrder error', err);
-    res.status(500).json({ success: false, message: 'Failed to create order' });
-  } finally {
-    session.endSession();
+    console.error('createOrder error:', err);
+    console.error('Error details:', err.message);
+    console.error('Stack trace:', err.stack);
+    res.status(500).json({ success: false, message: 'Failed to create order: ' + err.message });
   }
 };
 
