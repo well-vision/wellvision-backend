@@ -1,6 +1,6 @@
 // routes/invoiceRoutes.js
 import express from 'express';
-import { createInvoice } from '../controllers/invoiceController.js';
+import { createInvoice, getInvoices, deleteInvoice } from '../controllers/invoiceController.js';
 import Counter from '../models/counterModel.js';
 import userAuth from '../middleware/userAuth.js';
 
@@ -37,6 +37,12 @@ router.get('/next-bill-no', async (req, res) => {
     res.status(500).json({ success: false, message: 'Error generating Bill No' });
   }
 });
+
+// Route: List invoices for Bills page with pagination & search
+router.get('/', userAuth, getInvoices);
+
+// Route: Delete a single invoice
+router.delete('/:id', userAuth, deleteInvoice);
 
 // Route: Create a new invoice (auto-generates billNo internally)
 router.post('/create', userAuth, createInvoice);
