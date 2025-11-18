@@ -1,5 +1,5 @@
 import express from 'express';
-import { getOrders, getOrderById, updateOrderStatus, createOrder, deleteOrder, previewOrderNumber, collectOrder } from '../controllers/orderController.js';
+import { getOrders, getOrderById, updateOrderStatus, createOrder, deleteOrder, previewOrderNumber, collectOrder, getPendingOrders } from '../controllers/orderController.js';
 import userAuth from '../middleware/userAuth.js';
 
 const router = express.Router();
@@ -11,6 +11,7 @@ router.use(userAuth);
 router.get('/preview-order-no', userAuth, previewOrderNumber);
 
 router.get('/', getOrders);
+router.get('/pending', getPendingOrders);
 router.post('/', createOrder);
 router.get('/:id', getOrderById);
 router.patch('/:id/status', updateOrderStatus);
