@@ -1,5 +1,5 @@
 import express from 'express';
-import { getOrders, getOrderById, updateOrderStatus, createOrder, deleteOrder, previewOrderNumber } from '../controllers/orderController.js';
+import { getOrders, getOrderById, updateOrderStatus, createOrder, deleteOrder, previewOrderNumber, collectOrder } from '../controllers/orderController.js';
 import userAuth from '../middleware/userAuth.js';
 
 const router = express.Router();
@@ -14,6 +14,7 @@ router.get('/', getOrders);
 router.post('/', createOrder);
 router.get('/:id', getOrderById);
 router.patch('/:id/status', updateOrderStatus);
+router.patch('/:id/collect', collectOrder);
 router.delete('/:id', deleteOrder);
 
 export default router;

@@ -15,9 +15,10 @@ const orderSchema = new mongoose.Schema({
   items: [orderItemSchema],
   status: {
     type: String,
-    enum: ['Order Received', 'Order place in Lab', 'In lab proccessing', 'Transit to shop', 'Ready for customer'],
+    enum: ['Order Received', 'Order Placed in Lab', 'In Lab Processing', 'Transit to Shop', 'Ready for Customer', 'Customer Collected'],
     default: 'Order Received',
   },
+  collected: { type: Boolean, default: false },
   total: { type: Number, required: true, default: 0 },
   placedAt: { type: Date, default: Date.now },
 }, { timestamps: true });
