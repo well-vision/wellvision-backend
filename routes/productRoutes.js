@@ -79,7 +79,6 @@ router.post('/', async (req, res) => {
       lensType,
       prescription: Boolean(prescription),
       rating,
-      // keep supply aligned with stock so admin dashboards stay consistent
       supply: numericStock,
     });
 
