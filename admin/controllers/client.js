@@ -26,6 +26,70 @@ export const getProducts = async (req, res) => {
   }
 };
 
+export const createProduct = async (req, res) => {
+  try {
+    const {
+      name,
+      price,
+      description,
+      category,
+      brand,
+      model,
+      cost,
+      stock,
+      reorderLevel,
+      frameMaterial,
+      frameColor,
+      lensType,
+      prescription,
+      rating,
+    } = req.body;
+
+    const numericPrice = Number(price);
+
+    if (!name || Number.isNaN(numericPrice)) {
+      return res
+        .status(400)
+        .json({ message: "Name and a valid price are required" });
+    }
+
+    const numericStock =
+      stock === undefined || stock === null ? 0 : Number(stock);
+    const numericCost =
+      cost === undefined || cost === null ? 0 : Number(cost);
+    const numericReorder =
+      reorderLevel === undefined || reorderLevel === null
+        ? 0
+        : Number(reorderLevel);
+
+    const product = new Product({
+      name,
+      price: numericPrice,
+      description,
+      category,
+      brand,
+      model,
+      cost: numericCost,
+      stock: numericStock,
+      reorderLevel: numericReorder,
+      frameMaterial,
+      frameColor,
+      lensType,
+      prescription: Boolean(prescription),
+      rating,
+      // keep supply in sync with stock for existing admin dashboards
+      supply: numericStock,
+    });
+
+    const savedProduct = await product.save();
+
+    res.status(201).json(savedProduct);
+  } catch (error) {
+    console.error("Error creating product:", error);
+    res.status(500).json({ message: "Failed to create product" });
+  }
+};
+
 export const getCustomers = async (req, res) => {
   try {
     const customers = await User.find({ role: "user" }).select("-password");
