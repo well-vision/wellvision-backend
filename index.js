@@ -8,6 +8,7 @@ import bodyParser from 'body-parser';
 
 // Wellvision Routes
 import customerRoutes from './routes/customerRoutes.js';
+import productRoutes from './routes/productRoutes.js';
 import invoiceRoutes from './routes/invoiceRoutes.js';
 import authRoutes from './routes/authRoutes.js';
 import userRoutes from './routes/userRoutes.js';
@@ -55,6 +56,7 @@ app.use(express.json()); // Already included in body-parser.json, but kept for c
 
 // Routes
 app.use('/api/customers', customerRoutes);
+app.use('/api/products', productRoutes);
 app.use('/api/invoices', invoiceRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/user', userRoutes);
