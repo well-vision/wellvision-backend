@@ -1,6 +1,6 @@
 // routes/invoiceRoutes.js
 import express from 'express';
-import { createInvoice, getInvoices, deleteInvoice } from '../controllers/invoiceController.js';
+import { createInvoice, getInvoices, getInvoice, updateInvoice, deleteInvoice } from '../controllers/invoiceController.js';
 import Counter from '../models/counterModel.js';
 import userAuth from '../middleware/userAuth.js';
 
@@ -40,6 +40,12 @@ router.get('/next-bill-no', async (req, res) => {
 
 // Route: List invoices for Bills page with pagination & search
 router.get('/', userAuth, getInvoices);
+
+// Route: Get a single invoice by ID
+router.get('/:id', userAuth, getInvoice);
+
+// Route: Update an invoice by ID
+router.put('/:id', userAuth, updateInvoice);
 
 // Route: Delete a single invoice
 router.delete('/:id', userAuth, deleteInvoice);

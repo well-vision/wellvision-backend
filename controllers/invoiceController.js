@@ -77,6 +77,57 @@ export const createInvoice = async (req, res) => {
   }
 };
 
+// Get a single invoice by ID
+export const getInvoice = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const invoice = await InvoiceModel.findById(id);
+    if (!invoice) {
+      return res.status(404).json({ success: false, message: 'Invoice not found' });
+    }
+    res.json({ success: true, invoice });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// Update an invoice by ID
+export const updateInvoice = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Coerce numeric fields and cast date
+    const rawItems = req.body.items || [];
+    const normalizedItems = rawItems
+      .map((item) => ({
+        ...item,
+        item: (item.item || '').trim(),
+        description: item.description,
+        rs: Number(item.rs),
+        cts: Number(item.cts),
+      }))
+      .filter((item) => item.item);
+
+    const updateData = {
+      ...req.body,
+      date: req.body.date ? new Date(req.body.date) : undefined,
+      amount: Number(req.body.amount),
+      advance: Number(req.body.advance),
+      balance: Number(req.body.balance),
+      items: normalizedItems,
+    };
+
+    const invoice = await InvoiceModel.findByIdAndUpdate(id, updateData, { new: true });
+    if (!invoice) {
+      return res.status(404).json({ success: false, message: 'Invoice not found' });
+    }
+
+    res.json({ success: true, invoice });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 // List invoices with pagination, sorting, and search to power the Bills page
 export const getInvoices = async (req, res) => {
   try {
