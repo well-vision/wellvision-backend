@@ -1,5 +1,6 @@
 import InvoiceModel from '../models/invoiceModel.js'; // Your invoice schema/model
 import Counter from '../models/counterModel.js'; // The counter model we discussed
+import Settings from '../models/settingsModel.js'; // Settings model
 
 // Function to get next sequence number
 async function getNextSequence(name) {
@@ -14,8 +15,31 @@ async function getNextSequence(name) {
 // Controller function to create invoice
 export const createInvoice = async (req, res) => {
   try {
+    const userId = req.user?.id;
+    if (!userId) {
+      return res.status(401).json({ success: false, message: 'User not authenticated' });
+    }
+
+    // Get user settings for invoice prefix and starting number
+    let settings = await Settings.findOne({ userId });
+    if (!settings) {
+      // Create default settings if none exist
+      settings = new Settings({
+        userId,
+        general: { shopName: 'My Spectacle Shop', shopEmail: 'contact@shop.com', shopPhone: '+94 77 123 4567', shopAddress: '123 Main Street, Colombo', currency: 'LKR', timezone: 'Asia/Colombo', language: 'en' },
+        notifications: { emailNotifications: true, smsNotifications: false, orderNotifications: true, lowStockAlerts: true, customerUpdates: false, dailyReports: true },
+        security: { twoFactorAuth: false, sessionTimeout: 30, passwordExpiry: 90, loginAttempts: 5, requireStrongPassword: true },
+        display: { theme: 'light', compactMode: false, showAnimations: true, sidebarCollapsed: false },
+        dataBackup: { autoBackup: true, backupFrequency: 'daily', dataRetention: 365 },
+        payments: { acceptCash: true, acceptCard: true, acceptMobile: true, taxRate: 0 },
+        invoice: { invoicePrefix: 'INV', invoiceNumberStart: 1001, showLogo: true, includeTerms: true },
+        order: { orderPrefix: 'ORD', orderNumberStart: 1001 }
+      });
+      await settings.save();
+    }
+
     const seq = await getNextSequence('billNo');
-    const billNo = `INV-${String(seq).padStart(4, '0')}`;
+    const billNo = `${settings.invoice.invoicePrefix}-${String(seq).padStart(4, '0')}`;
 
     // Coerce numeric fields and cast date
     const rawItems = req.body.items || [];
@@ -31,10 +55,20 @@ export const createInvoice = async (req, res) => {
       // usage (filling description and optional amounts) still saves.
       .filter((item) => item.item);
 
+    // Set invoice date: if date provided, combine with current time; otherwise use current datetime
+    let invoiceDate;
+    if (req.body.date) {
+      const providedDate = new Date(req.body.date);
+      const now = new Date();
+      invoiceDate = new Date(providedDate.getFullYear(), providedDate.getMonth(), providedDate.getDate(), now.getHours(), now.getMinutes(), now.getSeconds());
+    } else {
+      invoiceDate = new Date();
+    }
+
     const invoiceData = {
       ...req.body,
       billNo,
-      date: req.body.date ? new Date(req.body.date) : new Date(),
+      date: invoiceDate,
       amount: Number(req.body.amount),
       advance: Number(req.body.advance),
       balance: Number(req.body.balance),

@@ -48,6 +48,10 @@ const defaultSettings = {
     invoiceNumberStart: 1001,
     showLogo: true,
     includeTerms: true
+  },
+  order: {
+    orderPrefix: 'ORD',
+    orderNumberStart: 1001
   }
 };
 

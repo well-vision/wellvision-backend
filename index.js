@@ -15,6 +15,7 @@ import forexRoutes from './routes/forexRoutes.js';
 import notificationRoutes from './routes/notificationRoutes.js';
 import orderRoutes from './routes/orderRoutes.js';
 import productRoutes from './routes/productRoutes.js';
+import settingsRoutes from './routes/settingsRoutes.js';
 
 // Load .env colocated with this file, regardless of process.cwd()
 const __filename = fileURLToPath(import.meta.url);
@@ -48,6 +49,7 @@ app.use('/api/forex', forexRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/products', productRoutes);
+app.use('/api/settings', settingsRoutes);
 
 // Error Handler Middleware (should be last middleware)
 app.use((err, req, res, next) => {

@@ -3,6 +3,7 @@ import Product from '../models/productModel.js';
 import mongoose from 'mongoose';
 import transporter from '../config/nodemailer.js';
 import Counter from '../models/counterModel.js';
+import Settings from '../models/settingsModel.js';
 
 // Allowed statuses
 const ALLOWED_STATUSES = [
@@ -171,8 +172,31 @@ export const createOrder = async (req, res) => {
     // Auto-generate orderNumber if not provided
     let effectiveOrderNumber = (orderNumber || '').trim();
     if (!effectiveOrderNumber) {
+      const userId = req.user?.id;
+      if (!userId) {
+        return res.status(401).json({ success: false, message: 'User not authenticated' });
+      }
+
+      // Get user settings for order prefix
+      let settings = await Settings.findOne({ userId });
+      if (!settings) {
+        // Create default settings if none exist
+        settings = new Settings({
+          userId,
+          general: { shopName: 'My Spectacle Shop', shopEmail: 'contact@shop.com', shopPhone: '+94 77 123 4567', shopAddress: '123 Main Street, Colombo', currency: 'LKR', timezone: 'Asia/Colombo', language: 'en' },
+          notifications: { emailNotifications: true, smsNotifications: false, orderNotifications: true, lowStockAlerts: true, customerUpdates: false, dailyReports: true },
+          security: { twoFactorAuth: false, sessionTimeout: 30, passwordExpiry: 90, loginAttempts: 5, requireStrongPassword: true },
+          display: { theme: 'light', compactMode: false, showAnimations: true, sidebarCollapsed: false },
+          dataBackup: { autoBackup: true, backupFrequency: 'daily', dataRetention: 365 },
+          payments: { acceptCash: true, acceptCard: true, acceptMobile: true, taxRate: 0 },
+          invoice: { invoicePrefix: 'INV', invoiceNumberStart: 1001, showLogo: true, includeTerms: true },
+          order: { orderPrefix: 'ORD', orderNumberStart: 1001 }
+        });
+        await settings.save();
+      }
+
       const seq = await getNextSequence('orderNo');
-      effectiveOrderNumber = `ORD-${String(seq).padStart(4, '0')}`;
+      effectiveOrderNumber = `${settings.order.orderPrefix}-${String(seq).padStart(4, '0')}`;
     }
 
     if (items.length === 0) {
@@ -281,9 +305,32 @@ WellVision Optical Team
 // ---------------------------------------------------------------------------
 export const previewOrderNumber = async (req, res) => {
   try {
+    const userId = req.user?.id;
+    if (!userId) {
+      return res.status(401).json({ success: false, message: 'User not authenticated' });
+    }
+
+    // Get user settings for order prefix
+    let settings = await Settings.findOne({ userId });
+    if (!settings) {
+      // Create default settings if none exist
+      settings = new Settings({
+        userId,
+        general: { shopName: 'My Spectacle Shop', shopEmail: 'contact@shop.com', shopPhone: '+94 77 123 4567', shopAddress: '123 Main Street, Colombo', currency: 'LKR', timezone: 'Asia/Colombo', language: 'en' },
+        notifications: { emailNotifications: true, smsNotifications: false, orderNotifications: true, lowStockAlerts: true, customerUpdates: false, dailyReports: true },
+        security: { twoFactorAuth: false, sessionTimeout: 30, passwordExpiry: 90, loginAttempts: 5, requireStrongPassword: true },
+        display: { theme: 'light', compactMode: false, showAnimations: true, sidebarCollapsed: false },
+        dataBackup: { autoBackup: true, backupFrequency: 'daily', dataRetention: 365 },
+        payments: { acceptCash: true, acceptCard: true, acceptMobile: true, taxRate: 0 },
+        invoice: { invoicePrefix: 'INV', invoiceNumberStart: 1001, showLogo: true, includeTerms: true },
+        order: { orderPrefix: 'ORD', orderNumberStart: 1001 }
+      });
+      await settings.save();
+    }
+
     const counter = await Counter.findOne({ name: 'orderNo' });
     const nextSeq = (counter?.seq || 0) + 1;
-    const formatted = `ORD-${String(nextSeq).padStart(4, '0')}`;
+    const formatted = `${settings.order.orderPrefix}-${String(nextSeq).padStart(4, '0')}`;
     res.json({ success: true, nextOrderNumber: formatted });
   } catch (err) {
     console.error('previewOrderNumber error', err);
