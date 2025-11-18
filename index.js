@@ -51,6 +51,12 @@ app.use('/api/orders', orderRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/settings', settingsRoutes);
 
+// Admin routes
+app.use('/api/admin/client', clientRoutes);
+app.use('/api/admin/general', generalRoutes);
+app.use('/api/admin/management', managementRoutes);
+app.use('/api/admin/sales', salesRoutes);
+
 // Error Handler Middleware (should be last middleware)
 app.use((err, req, res, next) => {
   console.error(err.stack);
