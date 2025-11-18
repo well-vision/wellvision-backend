@@ -39,6 +39,20 @@ export const getOrders = async (req, res) => {
 };
 
 // ---------------------------------------------------------------------------
+// GET PENDING ORDERS (for sidebar notifications)
+// ---------------------------------------------------------------------------
+export const getPendingOrders = async (req, res) => {
+  try {
+    const pendingStatuses = ['Order Received', 'Order Placed in Lab', 'In Lab Processing', 'Transit to Shop', 'Ready for Customer'];
+    const orders = await Order.find({ status: { $in: pendingStatuses } }).sort({ placedAt: -1 }).lean();
+    res.json({ success: true, orders });
+  } catch (err) {
+    console.error('getPendingOrders error', err);
+    res.status(500).json({ success: false, message: 'Failed to fetch pending orders' });
+  }
+};
+
+// ---------------------------------------------------------------------------
 // GET ORDER BY ID
 // ---------------------------------------------------------------------------
 export const getOrderById = async (req, res) => {
