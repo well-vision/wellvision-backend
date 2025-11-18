@@ -11,7 +11,8 @@ const ALLOWED_STATUSES = [
   'Order Placed in Lab',
   'In Lab Processing',
   'Transit to Shop',
-  'Ready for Customer'
+  'Ready for Customer',
+  'Customer Collected'
 ];
 
 // Shared sequence helper for auto-incrementing order numbers
@@ -335,6 +336,31 @@ export const previewOrderNumber = async (req, res) => {
   } catch (err) {
     console.error('previewOrderNumber error', err);
     res.status(500).json({ success: false, message: 'Error previewing order number' });
+  }
+};
+
+// ---------------------------------------------------------------------------
+// COLLECT ORDER (mark as collected and update status to 'Customer Collected')
+// ---------------------------------------------------------------------------
+export const collectOrder = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const order = await Order.findByIdAndUpdate(id, { collected: true, status: 'Customer Collected' }, { new: true });
+
+    if (!order) return res.status(404).json({ success: false, message: 'Order not found' });
+
+    // Update corresponding invoice status to 'collected'
+    const InvoiceModel = (await import('../models/invoiceModel.js')).default;
+    await InvoiceModel.findOneAndUpdate(
+      { orderNo: order.orderNumber },
+      { status: 'collected' },
+      { new: true }
+    );
+
+    res.json({ success: true, data: order });
+  } catch (err) {
+    console.error('collectOrder error', err);
+    res.status(500).json({ success: false, message: 'Failed to collect order' });
   }
 };
 
