@@ -28,6 +28,11 @@ const invoiceSchema = new mongoose.Schema({
   amount: { type: Number, required: true },
   advance: { type: Number, required: true },
   balance: { type: Number, required: true },
+  status: {
+    type: String,
+    enum: ['pending', 'collected'],
+    default: 'pending'
+  },
 }, { timestamps: true });
 
 const Invoice = mongoose.model('Invoice', invoiceSchema);
