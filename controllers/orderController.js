@@ -2,6 +2,7 @@ import Order from '../models/orderModel.js';
 import Product from '../models/productModel.js';
 import mongoose from 'mongoose';
 import transporter from '../config/nodemailer.js';
+import Counter from '../models/counterModel.js';
 
 // Allowed statuses
 const ALLOWED_STATUSES = [
@@ -11,6 +12,16 @@ const ALLOWED_STATUSES = [
   'Transit to Shop',
   'Ready for Customer'
 ];
+
+// Shared sequence helper for auto-incrementing order numbers
+async function getNextSequence(name) {
+  const counter = await Counter.findOneAndUpdate(
+    { name },
+    { $inc: { seq: 1 } },
+    { new: true, upsert: true }
+  );
+  return counter.seq;
+}
 
 // ---------------------------------------------------------------------------
 // GET ALL ORDERS
@@ -153,8 +164,15 @@ export const createOrder = async (req, res) => {
   try {
     const { orderNumber, customerName, customerEmail, items = [], status = 'Order Received', total = 0 } = req.body;
 
-    if (!orderNumber || !customerName) {
-      return res.status(400).json({ success: false, message: 'orderNumber and customerName are required' });
+    if (!customerName) {
+      return res.status(400).json({ success: false, message: 'customerName is required' });
+    }
+
+    // Auto-generate orderNumber if not provided
+    let effectiveOrderNumber = (orderNumber || '').trim();
+    if (!effectiveOrderNumber) {
+      const seq = await getNextSequence('orderNo');
+      effectiveOrderNumber = `ORD-${String(seq).padStart(4, '0')}`;
     }
 
     if (items.length === 0) {
@@ -162,7 +180,7 @@ export const createOrder = async (req, res) => {
     }
 
     // Check duplicate number
-    const exists = await Order.findOne({ orderNumber });
+    const exists = await Order.findOne({ orderNumber: effectiveOrderNumber });
     if (exists) {
       return res.status(409).json({ success: false, message: 'Order number already exists' });
     }
@@ -192,7 +210,7 @@ export const createOrder = async (req, res) => {
 
     try {
       const order = await Order.create([{
-        orderNumber,
+        orderNumber: effectiveOrderNumber,
         customerName,
         customerEmail,
         items,
@@ -255,6 +273,21 @@ WellVision Optical Team
   } catch (err) {
     console.error('createOrder error', err);
     res.status(500).json({ success: false, message: 'Failed to create order: ' + err.message });
+  }
+};
+
+// ---------------------------------------------------------------------------
+// PREVIEW NEXT ORDER NUMBER (does not increment counter)
+// ---------------------------------------------------------------------------
+export const previewOrderNumber = async (req, res) => {
+  try {
+    const counter = await Counter.findOne({ name: 'orderNo' });
+    const nextSeq = (counter?.seq || 0) + 1;
+    const formatted = `ORD-${String(nextSeq).padStart(4, '0')}`;
+    res.json({ success: true, nextOrderNumber: formatted });
+  } catch (err) {
+    console.error('previewOrderNumber error', err);
+    res.status(500).json({ success: false, message: 'Error previewing order number' });
   }
 };
 

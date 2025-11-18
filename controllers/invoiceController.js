@@ -18,6 +18,19 @@ export const createInvoice = async (req, res) => {
     const billNo = `INV-${String(seq).padStart(4, '0')}`;
 
     // Coerce numeric fields and cast date
+    const rawItems = req.body.items || [];
+    const normalizedItems = rawItems
+      .map((item) => ({
+        ...item,
+        item: (item.item || '').trim(),
+        description: item.description,
+        rs: Number(item.rs),
+        cts: Number(item.cts),
+      }))
+      // Keep only items where there is a name; allow zero amounts so typical
+      // usage (filling description and optional amounts) still saves.
+      .filter((item) => item.item);
+
     const invoiceData = {
       ...req.body,
       billNo,
@@ -25,11 +38,7 @@ export const createInvoice = async (req, res) => {
       amount: Number(req.body.amount),
       advance: Number(req.body.advance),
       balance: Number(req.body.balance),
-      items: req.body.items.map(item => ({
-        ...item,
-        rs: Number(item.rs),
-        cts: Number(item.cts),
-      })),
+      items: normalizedItems,
     };
 
     const invoice = new InvoiceModel(invoiceData);

@@ -7,7 +7,7 @@ import userAuth from '../middleware/userAuth.js';
 const router = express.Router();
 
 // Route: Preview next Bill No (does NOT increment counter)
-router.get('/preview-bill-no', async (req, res) => {
+router.get('/preview-bill-no', userAuth, async (req, res) => {
   try {
     const counter = await Counter.findOne({ name: 'billNo' });
     const nextSeq = (counter?.seq || 0) + 1;
