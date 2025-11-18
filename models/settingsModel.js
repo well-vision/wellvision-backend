@@ -67,6 +67,12 @@ const settingsSchema = new mongoose.Schema({
     invoiceNumberStart: { type: Number, default: 1001, min: 1 },
     showLogo: { type: Boolean, default: true },
     includeTerms: { type: Boolean, default: true }
+  },
+
+  // Order Settings
+  order: {
+    orderPrefix: { type: String, default: 'ORD' },
+    orderNumberStart: { type: Number, default: 1001, min: 1 }
   }
 }, {
   timestamps: true
