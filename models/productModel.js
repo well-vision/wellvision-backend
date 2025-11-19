@@ -167,10 +167,10 @@ productSchema.pre('save', async function(next) {
     try {
       const counter = await mongoose.model('Counter').findOneAndUpdate(
         { name: 'productSKU' },
-        { $inc: { value: 1 } },
+        { $inc: { seq: 1 } },
         { new: true, upsert: true }
       );
-      this.sku = `PRD${String(counter.value).padStart(6, '0')}`;
+      this.sku = `PRD${String(counter.seq).padStart(6, '0')}`;
     } catch (error) {
       return next(error);
     }
