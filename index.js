@@ -17,6 +17,12 @@ import orderRoutes from './routes/orderRoutes.js';
 import productRoutes from './routes/productRoutes.js';
 import settingsRoutes from './routes/settingsRoutes.js';
 
+// Import admin routes
+import clientRouter from './routes/admin/client.js';
+import generalRouter from './routes/admin/general.js';
+import managementRouter from './routes/admin/management.js';
+import salesRouter from './routes/admin/sales.js';
+
 // Load .env colocated with this file, regardless of process.cwd()
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -52,10 +58,10 @@ app.use('/api/products', productRoutes);
 app.use('/api/settings', settingsRoutes);
 
 // Admin routes
-app.use('/api/admin/client', clientRoutes);
-app.use('/api/admin/general', generalRoutes);
-app.use('/api/admin/management', managementRoutes);
-app.use('/api/admin/sales', salesRoutes);
+app.use('/api/admin/client', clientRouter);
+app.use('/api/admin/general', generalRouter);
+app.use('/api/admin/management', managementRouter);
+app.use('/api/admin/sales', salesRouter);
 
 // Error Handler Middleware (should be last middleware)
 app.use((err, req, res, next) => {

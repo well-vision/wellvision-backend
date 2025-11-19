@@ -1,4 +1,4 @@
-import OverallStat from "../models/OverallStat.js";
+import OverallStat from "../../admin/models/AdminOverallStat.js";
 
 export const getSales = async (req, res) => {
   try {
